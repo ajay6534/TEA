@@ -36,44 +36,59 @@ void decipher(unsigned long *const v,unsigned long *const w,
     w[0]=y; w[1]=z;
 }
 
-void cbc_encrypt(int size, unsigned long * plaintext, unsigned long ** ciphertext,
+void cbc_encrypt(int size, char * plaintext, char ** ciphertext,
                  const unsigned long *const k){
     int i=0,j=0;
-    printf("plaintext: %s\n",(char*)plaintext);
+    printf("plaintext: %s\n",plaintext);
     unsigned long * v;
 //    if(size%4==0){
-    *ciphertext= malloc(size);
-    printf("original ciphertext: %s\n",(char*)*ciphertext);
+    *ciphertext= (char *)malloc(size+1);
+    printf("original ciphertext: %s\n",*ciphertext);
 //    }
     unsigned long * w;
 //    char * temp;
-    unsigned long *p;
-    for(i=0;i<size;i+=4){
-        p =plaintext+i;
-//        printf("pointer location %d: %s\n",i,(char*)p);
-//        printf("pointer location %d: %p\n",i,(char*)(plaintext+i));
-        v= &(plaintext[i/4]);
+    char *p;
+    for ( i = 0; i < size; i ++) {
+        printf(" %02x", plaintext[i]);
+    }
+    int threshold=2*sizeof(unsigned long);
+    printf("\n");
+//    printf("Size of Unsigned Long: %lu\n",sizeof(unsigned long));
+    for(i=0;i+threshold<size;i+=threshold){ //process two 4 or 8 bytes at a time
+//        p =plaintext+i;
+//        printf("pointer location %d: %s\n",i,p);
+//        printf("pointer location %d: %p\n",i,(plaintext+i));
+        v= (unsigned long *)(plaintext+i);
 //        printf("New Location %p\n",v);
-        w=&((*ciphertext)[i/4]);
-//        printf("New W Location %p\n",w);
+        w=(unsigned long*)((*ciphertext)+i);
+//        printf("New Location %p\n",v);
         encipher(v,w,k);
-//        decipher(w,w,k);
+        for(j=0;j<2;j++){
+            printf("v %d : %lx\n",j,v[j]);
+            printf("w %d : %lx\n",j,w[j]);
+        }
+        decipher(w,v,k);
+        for(j=0;j<2;j++){
+            printf("decipher: v %d : %lx\n",j,v[j]);
+            printf("decipher: w %d : %lx\n",j,w[j]);
+        }
 //        for(j=0;j<4;j++){
 //            *ciphertext[i+j]= temp[j];
 //        }
     }
-    printf("ciphtertext: %s\n",(char*)*ciphertext);
+    (*ciphertext)[size]='\0';
+    printf("ciphtertext: %s\n",*ciphertext);
     //pad the rest
 }
-void cbc_decrypt(int size, unsigned long * ciphertext, unsigned long ** plaintext,
+void cbc_decrypt(int size, char * ciphertext, char ** plaintext,
                  const unsigned long *const k){
     
 }
-void ctr_encrypt(int size, unsigned long * plaintext, unsigned long ** ciphertext,
+void ctr_encrypt(int size, char * plaintext, char ** ciphertext,
                  const unsigned long *const k){
     
 }
-void ctr_decrypt(int size, unsigned long * ciphertext, unsigned long ** plaintext,
+void ctr_decrypt(int size, char * ciphertext, char ** plaintext,
                  const unsigned long *const k){
     
 }

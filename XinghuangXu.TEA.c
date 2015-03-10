@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "tea.h"
+#include "BlockCipherMode.h"
 
-int readInFile(char * inputFileName,unsigned long ** inputBuffer);
-void outputFile(char * outputFileName,unsigned long * outputBuffer);
+int readInFile(char * inputFileName,char ** inputBuffer);
+void outputFile(char * outputFileName,char * outputBuffer);
 void checkValidInput(char* input,char* name);
 void generateKey(int entropy,unsigned long * key);
 void processRequest(char * mode,char *blockCipherMode,int entropy, char * inputFileName, char * outputFileName);
@@ -21,6 +22,9 @@ int main(int argc,char **argv)
 //    char * inputFileName=argv[4];
     checkValidInput(argv[5],"output file name");
 //    char * outputFileName=argv[5];
+//    int entropy= strtol(argv[3], NULL, 0);
+   //    int i=0;
+   
     processRequest(argv[1],argv[2],strtol(argv[3], NULL, 0),argv[4],argv[5]);
 }
 
@@ -33,11 +37,11 @@ void processRequest(char * mode,char *blockCipherMode,int entropy, char * inputF
 //        printf("%lu\n",key[i]);
 //    }
     //read in the input file and stored it in a char * with the size
-    unsigned long * inputBuffer;
+    char * inputBuffer;
     int inputBufferSize;
     printf( "input file location: %s\n", inputFileName );
     inputBufferSize=readInFile(inputFileName,&inputBuffer);
-    unsigned long * outputBuffer;
+    char * outputBuffer;
     printf( "size: %d\n", inputBufferSize );
     //    check block cipher mode
     if(strcmp(blockCipherMode,"CBT")==0){
@@ -85,7 +89,7 @@ void checkValidInput(char* input,char* name){
     }
 }
 
-void outputFile(char * outputFileName,unsigned long * outputBuffer){
+void outputFile(char * outputFileName,char * outputBuffer){
     FILE *ofp;
     ofp = fopen(outputFileName, "w+"); //input file (plaintext or ciphertext)
     if(ofp==NULL){
@@ -93,12 +97,12 @@ void outputFile(char * outputFileName,unsigned long * outputBuffer){
                 outputFileName);
         exit(1);
     }
-    fprintf(ofp, "%s",(char*)outputBuffer);
+    fprintf(ofp, "%s",outputBuffer);
     fclose(ofp);
 }
 
 
-int readInFile(char * inputFileName,unsigned long ** inputBuffer){
+int readInFile(char * inputFileName,char ** inputBuffer){
     FILE *ifp;
     ifp = fopen(inputFileName, "rb"); //input file (plaintext or ciphertext)
     if (ifp == NULL) {
