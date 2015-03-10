@@ -42,41 +42,44 @@ void cbc_encrypt(int size, char * plaintext, char ** ciphertext,
     printf("plaintext: %s\n",plaintext);
     unsigned long * v;
 //    if(size%4==0){
-    *ciphertext= (char *)malloc(size+1);
+    int threshold=2*sizeof(unsigned long);
+    *ciphertext= (char *)malloc(threshold*(size/threshold)+threshold); //increase the size for padding
     printf("original ciphertext: %s\n",*ciphertext);
 //    }
     unsigned long * w;
 //    char * temp;
     char *p;
     for ( i = 0; i < size; i ++) {
-        printf(" %02x", plaintext[i]);
+        (*ciphertext)[i]=plaintext[i];
+//        printf(" %02x", plaintext[i]);
     }
-    int threshold=2*sizeof(unsigned long);
+    
     printf("\n");
 //    printf("Size of Unsigned Long: %lu\n",sizeof(unsigned long));
-    for(i=0;i+threshold<size;i+=threshold){ //process two 4 or 8 bytes at a time
+    for(i=0;i+threshold<=size;i+=threshold){ //process two 4 or 8 bytes at a time
 //        p =plaintext+i;
 //        printf("pointer location %d: %s\n",i,p);
 //        printf("pointer location %d: %p\n",i,(plaintext+i));
-        v= (unsigned long *)(plaintext+i);
+        v= (unsigned long *)((*ciphertext)+i);
 //        printf("New Location %p\n",v);
-        w=(unsigned long*)((*ciphertext)+i);
-//        printf("New Location %p\n",v);
-        encipher(v,w,k);
-        for(j=0;j<2;j++){
-            printf("v %d : %lx\n",j,v[j]);
-            printf("w %d : %lx\n",j,w[j]);
-        }
-        decipher(w,v,k);
-        for(j=0;j<2;j++){
-            printf("decipher: v %d : %lx\n",j,v[j]);
-            printf("decipher: w %d : %lx\n",j,w[j]);
-        }
+//        w=(unsigned long*)((*ciphertext)+i);
+        encipher(v,v,k);
+//        for(j=0;j<2;j++){
+//            printf("v %d : %lx\n",j,v[j]);
+//            printf("w %d : %lx\n",j,w[j]);
+//        }
+//        decipher(w,w,k);
+//        for(j=0;j<2;j++){
+//            printf("decipher: v %d : %lx\n",j,v[j]);
+//            printf("decipher: w %d : %lx\n",j,w[j]);
+//        }
 //        for(j=0;j<4;j++){
 //            *ciphertext[i+j]= temp[j];
 //        }
     }
-    (*ciphertext)[size]='\0';
+    
+       //padding
+//    (*ciphertext)[size]='\0';
     printf("ciphtertext: %s\n",*ciphertext);
     //pad the rest
 }
