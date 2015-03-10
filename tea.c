@@ -38,60 +38,106 @@ void decipher(unsigned long *const v,unsigned long *const w,
 
 void cbc_encrypt(int size, char * plaintext, char ** ciphertext,
                  const unsigned long *const k){
-    int i=0,j=0;
-    printf("plaintext: %s\n",plaintext);
+    printf("\nCBC Encryption Mode:\n");
+    int i=0;
+    printf("plaintext:\n%s\n",plaintext);
     unsigned long * v;
-//    if(size%4==0){
+    unsigned long * iv; //initial iv to 0
     int threshold=2*sizeof(unsigned long);
     *ciphertext= (char *)malloc(threshold*(size/threshold)+threshold); //increase the size for padding
-    printf("original ciphertext: %s\n",*ciphertext);
-//    }
     unsigned long * w;
-//    char * temp;
-    char *p;
     for ( i = 0; i < size; i ++) {
         (*ciphertext)[i]=plaintext[i];
-//        printf(" %02x", plaintext[i]);
     }
     
-    printf("\n");
-//    printf("Size of Unsigned Long: %lu\n",sizeof(unsigned long));
-    for(i=0;i+threshold<=size;i+=threshold){ //process two 4 or 8 bytes at a time
-//        p =plaintext+i;
-//        printf("pointer location %d: %s\n",i,p);
-//        printf("pointer location %d: %p\n",i,(plaintext+i));
+    for(i=0;i<=size;i+=threshold){ //process two 4 or 8 bytes at a time
         v= (unsigned long *)((*ciphertext)+i);
-//        printf("New Location %p\n",v);
-//        w=(unsigned long*)((*ciphertext)+i);
+        if(i!=0){
+            iv=(unsigned long *)((*ciphertext)+i-threshold);
+            v[0]=iv[0]^v[0];
+            v[1]=iv[1]^v[1];
+        }
         encipher(v,v,k);
-//        for(j=0;j<2;j++){
-//            printf("v %d : %lx\n",j,v[j]);
-//            printf("w %d : %lx\n",j,w[j]);
-//        }
-//        decipher(w,w,k);
-//        for(j=0;j<2;j++){
-//            printf("decipher: v %d : %lx\n",j,v[j]);
-//            printf("decipher: w %d : %lx\n",j,w[j]);
-//        }
-//        for(j=0;j<4;j++){
-//            *ciphertext[i+j]= temp[j];
-//        }
     }
+    printf("ciphtertext:\n%s\n",*ciphertext);
     
-       //padding
-//    (*ciphertext)[size]='\0';
-    printf("ciphtertext: %s\n",*ciphertext);
-    //pad the rest
 }
+
 void cbc_decrypt(int size, char * ciphertext, char ** plaintext,
                  const unsigned long *const k){
-    
+    printf("\nCBC Decryption Mode:\n");
+    int i=0;
+    printf("ciphertext:\n%s\n",ciphertext);
+    unsigned long * v;
+    unsigned long * iv; //initial iv to 0
+    int threshold=2*sizeof(unsigned long);
+    *plaintext= (char *)malloc(threshold*(size/threshold)); //increase the size for padding
+    unsigned long * w;
+    for(i=0;i+threshold<=size;i+=threshold){ //process two 4 or 8 bytes at a time
+        v= (unsigned long *)(ciphertext+i);
+        w=(unsigned long *)((*plaintext)+i);
+        decipher(v,w,k);
+        if(i!=0){
+            iv=(unsigned long *)(ciphertext+i-threshold);
+            w[0]=iv[0]^w[0];
+            w[1]=iv[1]^w[1];
+        }
+    }
+    printf("plaintext:\n%s\n",*plaintext);
 }
+
 void ctr_encrypt(int size, char * plaintext, char ** ciphertext,
                  const unsigned long *const k){
+    printf("\nCTR Encryption Mode:\n");
+    int i=0;
+    printf("plaintext:\n%s\n",plaintext);
+    unsigned long * v;
+    unsigned long counter=0; //initial counter to 0
     
+    int blockSize=2*sizeof(unsigned long);
+    *ciphertext= (char *)malloc(blockSize*(size/blockSize)+blockSize); //increase the size for padding
+    int blockNumber=size/blockSize+1;
+    unsigned long * w=malloc(2);
+    for ( i = 0; i < size; i ++) {
+        (*ciphertext)[i]=plaintext[i];
+    }
+    unsigned long * c;
+    for(i=0;i<blockNumber;i++){
+        v[0]=counter;
+        v[1]=counter+1;
+        encipher(v,w,k); //generate random number in w
+        c=(unsigned long *)((*ciphertext)+i*blockSize);
+        c[0]=c[0]^w[0];
+        c[1]=c[1]^w[1];
+        counter+=2;  //increment the counter
+    }
+    printf("ciphtertext:\n%s\n",*ciphertext);
 }
+
 void ctr_decrypt(int size, char * ciphertext, char ** plaintext,
                  const unsigned long *const k){
-    
+    printf("\nCTR Decryption Mode:\n");
+    int i=0;
+    printf("ciphertext:\n%s\n",ciphertext);
+    unsigned long * v;
+    unsigned long * w=malloc(2);
+    unsigned long * c;
+    unsigned long counter=0; //initial counter to 0
+    int blockSize=2*sizeof(unsigned long);
+    int blockNumber=size/blockSize;
+    *plaintext= (char *)malloc(size); //increase the size for padding
+    unsigned long * p;
+    for(i=0;i<blockNumber;i++){
+        v[0]=counter;
+        v[1]=counter+1;
+        encipher(v,w,k); //generate random number in w
+        c=(unsigned long *)(ciphertext+i*blockSize);
+        c[0]=c[0]^w[0];
+        c[1]=c[1]^w[1];
+        counter+=2;  //increment the counter
+    }
+    for(i=0;i<size;i++){
+        (*plaintext)[i]=ciphertext[i];
+    }
+    printf("plaintext:\n%s\n",*plaintext);
 }

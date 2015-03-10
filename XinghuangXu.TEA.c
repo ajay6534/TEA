@@ -3,10 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "tea.h"
-#include "BlockCipherMode.h"
 
 int readInFile(char * inputFileName,char ** inputBuffer);
-void outputFile(char * outputFileName,char * outputBuffer);
+void outputFile(char * outputFileName,int size,char * outputBuffer);
 void checkValidInput(char* input,char* name);
 void generateKey(int entropy,unsigned long * key);
 void processRequest(char * mode,char *blockCipherMode,int entropy, char * inputFileName, char * outputFileName);
@@ -69,7 +68,7 @@ void processRequest(char * mode,char *blockCipherMode,int entropy, char * inputF
         exit(1);
     }
     printf( "output file location: %s\n", outputFileName );
-    outputFile(outputFileName,outputBuffer);
+    outputFile(outputFileName,inputBufferSize,outputBuffer);
 
 }
 
@@ -89,7 +88,7 @@ void checkValidInput(char* input,char* name){
     }
 }
 
-void outputFile(char * outputFileName,char * outputBuffer){
+void outputFile(char * outputFileName,int size, char * outputBuffer){
     FILE *ofp;
     ofp = fopen(outputFileName, "w+"); //input file (plaintext or ciphertext)
     if(ofp==NULL){
@@ -97,7 +96,10 @@ void outputFile(char * outputFileName,char * outputBuffer){
                 outputFileName);
         exit(1);
     }
-    fprintf(ofp, "%s",outputBuffer);
+    int i=0;
+    for(i=0;i<size;i++){
+        fprintf(ofp, "%c",outputBuffer[i]);
+    }
     fclose(ofp);
 }
 
