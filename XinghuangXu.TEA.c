@@ -2,6 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gcrypt.h>
 #include "tea.h"
 
 int readInFile(char * inputFileName,char ** inputBuffer);
@@ -60,6 +61,17 @@ void processRequest(char * mode,char *blockCipherMode,int entropy, char * inputF
         }else if(strcmp("-d",mode)==0){  //decrypt
             printf("Decryption\n");
             ctr_decrypt(inputBufferSize,inputBuffer,&outputBuffer,key);
+        }else{
+            printf("Invalid Operation Mode: %s. Valid Mode: -e, -d\n",mode);
+        }
+    }else if(strcmp(blockCipherMode,"OFB")==0){
+        printf("OFB Mode\n");
+        if(strcmp("-e",mode)==0){ //encrypt
+            printf("Encryption\n");
+            ofb_encrypt(inputBufferSize,inputBuffer,&outputBuffer,key);
+        }else if(strcmp("-d",mode)==0){  //decrypt
+            printf("Decryption\n");
+            ofb_decrypt(inputBufferSize,inputBuffer,&outputBuffer,key);
         }else{
             printf("Invalid Operation Mode: %s. Valid Mode: -e, -d\n",mode);
         }

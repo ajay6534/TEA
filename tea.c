@@ -86,6 +86,56 @@ void cbc_decrypt(int size, char * ciphertext, char ** plaintext,
     printf("plaintext:\n%s\n",*plaintext);
 }
 
+
+void ofb_encrypt(int size, char * plaintext, char ** ciphertext,
+                 const unsigned long *const k){
+    printf("\nOFB Encryption Mode:\n");
+    int i=0;
+    printf("plaintext:\n%s\n",plaintext);
+    int blockSize=2*sizeof(unsigned long);
+    *ciphertext= (char *)malloc(blockSize*(size/blockSize)+blockSize); //increase the size for padding
+    int blockNumber=size/blockSize+1;
+    unsigned long * w=malloc(2); //initial iv
+    w[0]=0;
+    w[1]=1;
+    for ( i = 0; i < size; i ++) {
+        (*ciphertext)[i]=plaintext[i]; //update ciphertext to be plaintext
+    }
+    unsigned long * c;
+    for(i=0;i<blockNumber;i++){
+        encipher(w,w,k); //generate random number in w
+        c=(unsigned long *)((*ciphertext)+i*blockSize);
+        c[0]=c[0]^w[0];  //encrypt plaintext at location i*blockSize
+        c[1]=c[1]^w[1];
+    }
+    printf("ciphtertext:\n%s\n",*ciphertext);
+}
+
+void ofb_decrypt(int size, char * ciphertext, char ** plaintext,
+                 const unsigned long *const k){
+    printf("\nOFB Decryption Mode:\n");
+    int i=0;
+    printf("ciphertext:\n%s\n",ciphertext);
+    unsigned long * v;
+    unsigned long * w=malloc(2); //initial iv
+    w[0]=0;
+    w[1]=1;
+    unsigned long * c;
+    int blockSize=2*sizeof(unsigned long);
+    int blockNumber=size/blockSize;
+    *plaintext= (char *)malloc(size);
+    for(i=0;i<blockNumber;i++){
+        encipher(w,w,k); //generate random number in w
+        c=(unsigned long *)(ciphertext+i*blockSize);
+        c[0]=c[0]^w[0];
+        c[1]=c[1]^w[1];
+    }
+    for(i=0;i<size;i++){
+        (*plaintext)[i]=ciphertext[i];
+    }
+    printf("plaintext:\n%s\n",*plaintext);
+}
+
 void ctr_encrypt(int size, char * plaintext, char ** ciphertext,
                  const unsigned long *const k){
     printf("\nCTR Encryption Mode:\n");
