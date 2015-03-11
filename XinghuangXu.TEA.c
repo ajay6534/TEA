@@ -24,7 +24,7 @@ int main(int argc,char **argv)
     checkValidInput(argv[4],"key");
     checkValidInput(argv[5],"input file name");
     checkValidInput(argv[6],"output file name");
-    processRequest(argv[1],argv[2],argv[3],strtol(argv[4], NULL, 0),argv[5],argv[6]);
+    processRequest(argv[1],argv[2],argv[3],argv[4],argv[5],argv[6]);
 }
 
 void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * keyFileName, char * inputFileName, char * outputFileName){
@@ -35,11 +35,10 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
     inputBufferSize=readInFile(inputFileName,&inputBuffer);
     char * keyFromFile;
     readKeyFromFile(keyFileName,&keyFromFile);
-    return;
     char * outputBuffer;
     printf( "size: %d\n", inputBufferSize );
     if(strcmp(blockCipher,"tea")==0){
-        unsigned long key[4];
+        unsigned long *key=(unsigned long *)keyFromFile;
         //generate the key
 //        generateKey(entropy,key);
         //    check block cipher mode
@@ -84,18 +83,18 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
 
     }else if(strcmp(blockCipher,"des")==0){ //DES
         printf("DES\n");
-        DES_cblock key = {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10};
+        DES_cblock *key = (DES_cblock *)keyFromFile;
                 //    check block cipher mode
         if(strcmp(blockCipherMode,"CBT")==0){
             printf("CBT Mode\n");
             inputBufferSize=8*(inputBufferSize/8)+8; //accomodate for the padding
             if(strcmp("-e",mode)==0){ //encrypt
                 printf("Encryption\n");
-                xxh_des_encrypt(inputBufferSize,inputBuffer,&outputBuffer,&key);
+                xxh_des_encrypt(inputBufferSize,inputBuffer,&outputBuffer,key);
                 
             }else{  //decrypt
                 printf("Decryption\n");
-                xxh_des_decrypt(inputBufferSize,inputBuffer,&outputBuffer,&key);
+                xxh_des_decrypt(inputBufferSize,inputBuffer,&outputBuffer,key);
             }
         }else if(strcmp(blockCipherMode,"CTR")==0){
             fprintf(stderr, "Invalid Block Cipher Mode for DES: %s!\n Valid Values: CBT, OFB.",blockCipherMode);
@@ -105,10 +104,10 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
             printf("OFB Mode\n");
             if(strcmp("-e",mode)==0){ //encrypt
                 printf("Encryption\n");
-                xxh_des_ofb_encrypt(inputBufferSize,inputBuffer,&outputBuffer,&key);
+                xxh_des_ofb_encrypt(inputBufferSize,inputBuffer,&outputBuffer,key);
             }else if(strcmp("-d",mode)==0){  //decrypt
                 printf("Decryption\n");
-                xxh_des_ofb_encrypt(inputBufferSize,inputBuffer,&outputBuffer,&key);
+                xxh_des_ofb_encrypt(inputBufferSize,inputBuffer,&outputBuffer,key);
             }else{
                 printf("Invalid Operation Mode: %s. Valid Mode: -e, -d\n",mode);
             }
@@ -118,14 +117,14 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
         }
     }else if(strcmp(blockCipher,"performance")==0){
         //create difference input size
-        DES_cblock desKey = {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10};
+        DES_cblock *desKey = (DES_cblock *)keyFromFile;
         int i,count=0;
         int size[4] = {64,512,4096,32768};
         struct timeval t0;
         struct timeval t1;
         char * temp;
         long long elapsed;
-        unsigned long teaKey[4];
+        unsigned long *teaKey=(unsigned long *)keyFromFile;
         //generate the key
 //        generateKey(entropy,teaKey);
         printf("size: %lu\n",sizeof(size)/sizeof(int));
@@ -140,14 +139,14 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
             printf("size of the doc: %d \n",count);
             
             gettimeofday(&t0, 0);
-            xxh_des_encrypt(count,temp,&outputBuffer,&desKey);
+            xxh_des_encrypt(count,temp,&outputBuffer,desKey);
             gettimeofday(&t1, 0);
             //des cbc mode
             elapsed = (t1.tv_sec-t0.tv_sec)*1000000LL + t1.tv_usec-t0.tv_usec;
             printf("DES CBC Time Elapsed: %llu\n",elapsed);
             
             gettimeofday(&t0, 0);
-            xxh_des_ofb_encrypt(count,temp,&outputBuffer,&desKey);
+            xxh_des_ofb_encrypt(count,temp,&outputBuffer,desKey);
             gettimeofday(&t1, 0);
             //des OFB mode
             elapsed = (t1.tv_sec-t0.tv_sec)*1000000LL + t1.tv_usec-t0.tv_usec;
@@ -174,21 +173,21 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
         
     }else{ //test
         //create difference input size
-        DES_cblock desKey = {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10};
+        DES_cblock *desKey = (DES_cblock *)keyFromFile;
         char * temp;
-        unsigned long teaKey[4];
+        unsigned long *teaKey=(unsigned long *)keyFromFile;
         //generate the key
 //        generateKey(entropy,teaKey);
         //des cbc
-        xxh_des_encrypt(inputBufferSize,inputBuffer,&outputBuffer,&desKey);
-        xxh_des_decrypt(inputBufferSize,outputBuffer,&temp,&desKey);
+        xxh_des_encrypt(inputBufferSize,inputBuffer,&outputBuffer,desKey);
+        xxh_des_decrypt(inputBufferSize,outputBuffer,&temp,desKey);
         printf("DES CBC Correctness: %s\n",strcmp(inputBuffer,temp)==0?"True":"False");
         free(temp);
         free(outputBuffer);
         
         //des ofb
-        xxh_des_ofb_encrypt(inputBufferSize,inputBuffer,&outputBuffer,&desKey);
-        xxh_des_ofb_encrypt(inputBufferSize,outputBuffer,&temp,&desKey);
+        xxh_des_ofb_encrypt(inputBufferSize,inputBuffer,&outputBuffer,desKey);
+        xxh_des_ofb_encrypt(inputBufferSize,outputBuffer,&temp,desKey);
         
         temp[inputBufferSize]='\0';
         printf("DES OFB Correctness: %s\n",strcmp(inputBuffer,temp)==0?"True":"False");
@@ -238,8 +237,7 @@ void readKeyFromFile(char *keyFileName, char ** keyFromFile){
     }
     int i=0;
     for(i=0;i<keySize;i++){
-        fscanf(ifp, "%c", (*keyFromFile+i));
-        printf("%d",(*keyFromFile)[i]);
+        fscanf(ifp, "%d\n", (int *)(*keyFromFile+i));
     }
     fclose(ifp);
 
