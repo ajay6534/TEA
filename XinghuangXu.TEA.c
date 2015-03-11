@@ -196,7 +196,9 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
         
         //tea cbc
         tea_cbc_encrypt(inputBufferSize,inputBuffer,&outputBuffer,teaKey);
-        tea_cbc_decrypt(inputBufferSize,outputBuffer,&temp,teaKey);
+        tea_cbc_decrypt(8*(inputBufferSize/8)+8,outputBuffer,&temp,teaKey);
+                printf("Before:\n%s\n",inputBuffer);
+                printf("After:\n%s\n",temp);
         temp[inputBufferSize]='\0';
         printf("TEA CBC Correctness: %s\n",strcmp(inputBuffer,temp)==0?"True":"False");
         free(temp);
@@ -213,8 +215,7 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
         //tea ctr
         tea_ctr_encrypt(inputBufferSize,inputBuffer,&outputBuffer,teaKey);
         tea_ctr_decrypt(8*(inputBufferSize/8)+8,outputBuffer,&temp,teaKey);
-//        printf("Before:\n%s\n",inputBuffer);
-//        printf("After:\n%s\n",temp);
+
         temp[inputBufferSize]='\0';
         printf("TEA OFB Correctness: %s\n",strcmp(inputBuffer,temp)==0?"True":"False");
         free(temp);
@@ -254,7 +255,7 @@ void generateKey(int entropy,unsigned long * key){
 
 void checkValidInput(char* input,char* name){
     if (input==NULL) {
-        printf("%s is empty\n Usage: ./executableName.out [encryption -e or decryption -d] [Block Cipher Mode: CBT or CTR ] [key] [inputFileName] [outputFileName]\n",name);
+        printf("%s is empty\n Usage: ./program [encryption -e or decryption -d] [Block Cipher des or tea][Block Cipher Mode: CBT or OFB ] [key file location] [inputFileName] [outputFileName]\n",name);
         exit(1);
     }
 }
