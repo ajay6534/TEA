@@ -25,4 +25,8 @@ chmod u+x performance.sh
 ./program -d des OFB key ciphertext plaintext
 #executable [operation mode -e(encription) or -d(decription] [Block Cipher: tea or des] [Block Cipher Mode: CBT, or OFB] [Key file name(8 integer numbers one on each line)] [input file name] [output file name]
 
+4. To Test the encrypt decrypt correctness:
+chmod u+x test.sh
+./test.sh
+
 If you have any questions, please let me know at xinghuangxu@gmail.com

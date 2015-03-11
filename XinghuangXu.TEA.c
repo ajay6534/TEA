@@ -7,7 +7,6 @@
 #include <sys/time.h>
 #include "tea.h"
 
-#define BUFSIZE 512 
 
 int readInFile(char * inputFileName,char ** inputBuffer);
 void outputFile(char * outputFileName,int size,char * outputBuffer);
@@ -16,6 +15,10 @@ void generateKey(int entropy,unsigned long * key);
 void processRequest(char * mode,char * blockCipher,char *blockCipherMode,char * keyFileName, char * inputFileName, char * outputFileName);
 void readKeyFromFile(char *keyFileName, char ** keyFromFile);
 
+/*
+ Entry Point
+ Check the validity of the input arguments
+ */
 int main(int argc,char **argv)
 {
     checkValidInput(argv[1],"Mode? Encryption or Decryption");
@@ -27,6 +30,9 @@ int main(int argc,char **argv)
     processRequest(argv[1],argv[2],argv[3],argv[4],argv[5],argv[6]);
 }
 
+/*
+ Process the encrypt/decrypt request
+ */
 void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * keyFileName, char * inputFileName, char * outputFileName){
     //read in the input file and stored it in a char * with the size
     char * inputBuffer;
@@ -36,11 +42,8 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
     char * keyFromFile;
     readKeyFromFile(keyFileName,&keyFromFile);
     char * outputBuffer;
-    printf( "size: %d\n", inputBufferSize );
-    if(strcmp(blockCipher,"tea")==0){
+    if(strcmp(blockCipher,"tea")==0){ //tea
         unsigned long *key=(unsigned long *)keyFromFile;
-        //generate the key
-//        generateKey(entropy,key);
         //    check block cipher mode
         if(strcmp(blockCipherMode,"CBT")==0){
             printf("CBT Mode\n");
@@ -115,7 +118,7 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
             fprintf(stderr, "Invalid Block Cipher Mode: %s!\n Valid Values: CBT, CTR.",blockCipherMode);
             exit(1);
         }
-    }else if(strcmp(blockCipher,"performance")==0){
+    }else if(strcmp(blockCipher,"performance")==0){ //performance
         //create difference input size
         DES_cblock *desKey = (DES_cblock *)keyFromFile;
         int i,count=0;
@@ -124,9 +127,7 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
         struct timeval t1;
         char * temp;
         long long elapsed;
-        unsigned long *teaKey=(unsigned long *)keyFromFile;
-        //generate the key
-//        generateKey(entropy,teaKey);
+        unsigned long *teaKey=(unsigned long *)keyFromFile; //read key from file
         printf("size: %lu\n",sizeof(size)/sizeof(int));
         for(i=0;i<sizeof(size)/sizeof(int);i++){
             count=0;
@@ -172,13 +173,11 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
         }
         return;
     }else{ //test
-        //create difference input size
+        
         DES_cblock *desKey = (DES_cblock *)keyFromFile;
         char * temp;
         unsigned long *teaKey=(unsigned long *)keyFromFile;
-        //generate the key
-//        generateKey(entropy,teaKey);
-        //des cbc
+
         xxh_des_encrypt(inputBufferSize,inputBuffer,&outputBuffer,desKey);
         xxh_des_decrypt(inputBufferSize,outputBuffer,&temp,desKey);
         printf("DES CBC Correctness: %s\n",strcmp(inputBuffer,temp)==0?"True":"False");
@@ -226,6 +225,9 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
     outputFile(outputFileName,inputBufferSize,outputBuffer);
 }
 
+/*
+ Read key from file, one number per line
+ */
 void readKeyFromFile(char *keyFileName, char ** keyFromFile){
     FILE *ifp;
     int keySize=8;
@@ -244,15 +246,9 @@ void readKeyFromFile(char *keyFileName, char ** keyFromFile){
 
 }
 
-void generateKey(int entropy,unsigned long * key){
-    srand(entropy);
-    int i=0;
-    for(i=0;i<4;i++){
-        key[i]=rand();
-    }
-    
-}
-
+/*
+ Check if the input is not null
+ */
 void checkValidInput(char* input,char* name){
     if (input==NULL) {
         printf("%s is empty\n Usage: ./program [encryption -e or decryption -d] [Block Cipher des or tea][Block Cipher Mode: CBT or OFB ] [key file location] [inputFileName] [outputFileName]\n",name);
@@ -260,6 +256,9 @@ void checkValidInput(char* input,char* name){
     }
 }
 
+/*
+ Write Char Array to a file
+ */
 void outputFile(char * outputFileName,int size, char * outputBuffer){
     FILE *ofp;
     ofp = fopen(outputFileName, "w+"); //input file (plaintext or ciphertext)
@@ -275,7 +274,9 @@ void outputFile(char * outputFileName,int size, char * outputBuffer){
     fclose(ofp);
 }
 
-
+/*
+ Red Char Array from a file
+ */
 int readInFile(char * inputFileName,char ** inputBuffer){
     FILE *ifp;
     ifp = fopen(inputFileName, "rb"); //input file (plaintext or ciphertext)
