@@ -16,4 +16,4 @@ void tea_ofb_decrypt(int size, char * ciphertext, char ** plaintext,
                  const unsigned long *const k);
 void xxh_des_decrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer, DES_cblock *seed);
 void xxh_des_encrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer, DES_cblock *seed);
-void xxh_ofb_encrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer, DES_cblock *seed);
+void xxh_des_ofb_encrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer, DES_cblock *seed);

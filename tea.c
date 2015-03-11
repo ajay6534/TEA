@@ -41,9 +41,7 @@ void decipher(unsigned long *const v,unsigned long *const w,
 
 void tea_cbc_encrypt(int size, char * plaintext, char ** ciphertext,
                  const unsigned long *const k){
-    printf("\nCBC Encryption Mode:\n");
     int i=0;
-    printf("plaintext:\n%s\n",plaintext);
     unsigned long * v;
     unsigned long * iv; //initial iv to 0
     int threshold=2*sizeof(unsigned long);
@@ -62,21 +60,18 @@ void tea_cbc_encrypt(int size, char * plaintext, char ** ciphertext,
         }
         encipher(v,v,k);
     }
-    printf("ciphtertext:\n%s\n",*ciphertext);
     
 }
 
 void tea_cbc_decrypt(int size, char * ciphertext, char ** plaintext,
                  const unsigned long *const k){
-    printf("\nCBC Decryption Mode:\n");
     int i=0;
-    printf("ciphertext:\n%s\n",ciphertext);
     unsigned long * v;
     unsigned long * iv; //initial iv to 0
     int threshold=2*sizeof(unsigned long);
-    *plaintext= (char *)malloc(threshold*(size/threshold)); //increase the size for padding
+    *plaintext= (char *)malloc(size); //increase the size for padding
     unsigned long * w;
-    for(i=0;i+threshold<=size;i+=threshold){ //process two 4 or 8 bytes at a time
+    for(i=0;i < size;i+=threshold){ //process two 4 or 8 bytes at a time
         v= (unsigned long *)(ciphertext+i);
         w=(unsigned long *)((*plaintext)+i);
         decipher(v,w,k);
@@ -86,15 +81,12 @@ void tea_cbc_decrypt(int size, char * ciphertext, char ** plaintext,
             w[1]=iv[1]^w[1];
         }
     }
-    printf("plaintext:\n%s\n",*plaintext);
 }
 
 
 void tea_ofb_encrypt(int size, char * plaintext, char ** ciphertext,
                  const unsigned long *const k){
-    printf("\nOFB Encryption Mode:\n");
     int i=0;
-    printf("plaintext:\n%s\n",plaintext);
     int blockSize=2*sizeof(unsigned long);
     *ciphertext= (char *)malloc(blockSize*(size/blockSize)+blockSize); //increase the size for padding
     int blockNumber=size/blockSize+1;
@@ -111,14 +103,11 @@ void tea_ofb_encrypt(int size, char * plaintext, char ** ciphertext,
         c[0]=c[0]^w[0];  //encrypt plaintext at location i*blockSize
         c[1]=c[1]^w[1];
     }
-    printf("ciphtertext:\n%s\n",*ciphertext);
 }
 
 void tea_ofb_decrypt(int size, char * ciphertext, char ** plaintext,
                  const unsigned long *const k){
-    printf("\nOFB Decryption Mode:\n");
     int i=0;
-    printf("ciphertext:\n%s\n",ciphertext);
     unsigned long * v;
     unsigned long * w=malloc(2); //initial iv
     w[0]=0;
@@ -136,15 +125,12 @@ void tea_ofb_decrypt(int size, char * ciphertext, char ** plaintext,
     for(i=0;i<size;i++){
         (*plaintext)[i]=ciphertext[i];
     }
-    printf("plaintext:\n%s\n",*plaintext);
 }
 
 void tea_ctr_encrypt(int size, char * plaintext, char ** ciphertext,
                  const unsigned long *const k){
-    printf("\nCTR Encryption Mode:\n");
     int i=0;
-    printf("plaintext:\n%s\n",plaintext);
-    unsigned long * v;
+    unsigned long * v=malloc(sizeof(unsigned long)*2);
     unsigned long counter=0; //initial counter to 0
     
     int blockSize=2*sizeof(unsigned long);
@@ -155,6 +141,7 @@ void tea_ctr_encrypt(int size, char * plaintext, char ** ciphertext,
         (*ciphertext)[i]=plaintext[i];
     }
     unsigned long * c;
+   
     for(i=0;i<blockNumber;i++){
         v[0]=counter;
         v[1]=counter+1;
@@ -164,16 +151,14 @@ void tea_ctr_encrypt(int size, char * plaintext, char ** ciphertext,
         c[1]=c[1]^w[1];
         counter+=2;  //increment the counter
     }
-    printf("ciphtertext:\n%s\n",*ciphertext);
 }
 
 void tea_ctr_decrypt(int size, char * ciphertext, char ** plaintext,
                  const unsigned long *const k){
-    printf("\nCTR Decryption Mode:\n");
+    
     int i=0;
-    printf("ciphertext:\n%s\n",ciphertext);
-    unsigned long * v;
-    unsigned long * w=malloc(2);
+    unsigned long * v=malloc(sizeof(unsigned long)*2);
+    unsigned long * w=malloc(sizeof(unsigned long)*2);
     unsigned long * c;
     unsigned long counter=0; //initial counter to 0
     int blockSize=2*sizeof(unsigned long);
@@ -192,7 +177,6 @@ void tea_ctr_decrypt(int size, char * ciphertext, char ** plaintext,
     for(i=0;i<size;i++){
         (*plaintext)[i]=ciphertext[i];
     }
-    printf("plaintext:\n%s\n",*plaintext);
 }
 
 void xxh_des_encrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer, DES_cblock *key){
@@ -204,20 +188,9 @@ void xxh_des_encrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer,
         fprintf(stderr, "ERROR: Unable to set key schedule\n");
         exit(1);
     }
-    printf("Plaintext:\n");
-    int i=0;
-    for(i=0;i<inputBufferSize;i++){
-        printf("%c", inputBuffer[i]);
-    }
-    printf("\n");
     *outputBuffer=malloc(inputBufferSize);
     DES_ncbc_encrypt(inputBuffer, *outputBuffer, inputBufferSize, &keysched, &ivsetup, DES_ENCRYPT);
     
-    printf("Ciphertext:");
-    for(i=0;i<inputBufferSize;i++){
-        printf("%c", (*outputBuffer)[i]);
-    }
-    printf("\n");
 }
 
 void xxh_des_decrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer, DES_cblock *key){
@@ -232,17 +205,7 @@ void xxh_des_decrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer,
         
     }
     *outputBuffer=malloc(inputBufferSize);
-    int i=0;
-    printf("Ciphertext:");
-    for(i=0;i<inputBufferSize;i++){
-        printf("%c", inputBuffer[i]);
-    }
     DES_ncbc_encrypt(inputBuffer, *outputBuffer, inputBufferSize, &keysched, &ivsetup, DES_DECRYPT);
-    
-    printf("\n\n\nDecrypted Text: \n");
-    for(i=0;i<inputBufferSize;i++){
-        printf("%c", (*outputBuffer)[i]);
-    }
 }
 
 void xxh_des_ofb_encrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer, DES_cblock *key){
@@ -259,12 +222,5 @@ void xxh_des_ofb_encrypt(int inputBufferSize,char * inputBuffer,char **outputBuf
         exit(1);
     }
     *outputBuffer=malloc(inputBufferSize);
-    printf("Plaintext: [%s]\n", inputBuffer);
-    printf("Plaintext Length: %d\n", inputBufferSize);
     DES_ofb_encrypt(inputBuffer, *outputBuffer, 8,inputBufferSize, &ks, &ivecstr);
-    int i=0;
-    printf("Ciphertext:");
-    for(i=0;i<inputBufferSize;i++){
-        printf("%c", (*outputBuffer)[i]);
-    }
 }
