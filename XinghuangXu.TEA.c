@@ -119,7 +119,7 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
         //create difference input size
         DES_cblock *desKey = (DES_cblock *)keyFromFile;
         int i,count=0;
-        int size[4] = {64,512,4096,32768};
+        int size[5] = {64,512,4096,32768,327680};
         struct timeval t0;
         struct timeval t1;
         char * temp;
@@ -166,11 +166,11 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
             elapsed = (t1.tv_sec-t0.tv_sec)*1000000LL + t1.tv_usec-t0.tv_usec;
             printf("TEA OFB Time Elapsed: %llu\n",elapsed);
             
-            printf("\n",elapsed);
+            printf("\n");
             
             free(temp);
         }
-        
+        return;
     }else{ //test
         //create difference input size
         DES_cblock *desKey = (DES_cblock *)keyFromFile;

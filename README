@@ -1,5 +1,18 @@
-echo "Start Example"
-sh 64build.sh
+Overview:
+This is a program that can encrypt and decrypt input files using input keys. Key needs to be stored in a file, 8 numbers one per line. Please see the example key file. 
+Block Ciphers and their operational modes supported:
+TEA- Tiny Encryption Algorithm (CBC, OFB, CTR)
+DES- Data Encryption Standard (CBC, OFB)
+
+1. To Build the program please run:
+chmod u+x build.sh
+./build.sh
+
+2. To Get Performance Statistics:
+chmod u+x performance.sh
+./performance.sh
+
+3. To encrypt or decrypt a single file after building the program:
 ./program -e tea CBT key input.txt ciphertext
 ./program -d tea CBT key ciphertext plaintext
 ./program -e tea CTR key input.txt ciphertext
@@ -10,7 +23,6 @@ sh 64build.sh
 ./program -d des CBT key ciphertext plaintext
 ./program -e des OFB key input.txt ciphertext
 ./program -d des OFB key ciphertext plaintext
-./program -e test OFB key input.txt ciphertext
-./program -e performance OFB key sample.txt ciphertext
 #executable [operation mode -e(encription) or -d(decription] [Block Cipher: tea or des] [Block Cipher Mode: CBT, or OFB] [Key file name(8 integer numbers one on each line)] [input file name] [output file name]
-echo "END Example"
+
+If you have any questions, please let me know at xinghuangxu@gmail.com
