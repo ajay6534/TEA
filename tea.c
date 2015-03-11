@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <openssl/des.h>
+#include <openssl/rand.h>
+#include <string.h>
 
 void encipher(unsigned long *const v,unsigned long *const w,
               const unsigned long *const k)
@@ -36,7 +39,7 @@ void decipher(unsigned long *const v,unsigned long *const w,
     w[0]=y; w[1]=z;
 }
 
-void cbc_encrypt(int size, char * plaintext, char ** ciphertext,
+void tea_cbc_encrypt(int size, char * plaintext, char ** ciphertext,
                  const unsigned long *const k){
     printf("\nCBC Encryption Mode:\n");
     int i=0;
@@ -63,7 +66,7 @@ void cbc_encrypt(int size, char * plaintext, char ** ciphertext,
     
 }
 
-void cbc_decrypt(int size, char * ciphertext, char ** plaintext,
+void tea_cbc_decrypt(int size, char * ciphertext, char ** plaintext,
                  const unsigned long *const k){
     printf("\nCBC Decryption Mode:\n");
     int i=0;
@@ -87,7 +90,7 @@ void cbc_decrypt(int size, char * ciphertext, char ** plaintext,
 }
 
 
-void ofb_encrypt(int size, char * plaintext, char ** ciphertext,
+void tea_ofb_encrypt(int size, char * plaintext, char ** ciphertext,
                  const unsigned long *const k){
     printf("\nOFB Encryption Mode:\n");
     int i=0;
@@ -111,7 +114,7 @@ void ofb_encrypt(int size, char * plaintext, char ** ciphertext,
     printf("ciphtertext:\n%s\n",*ciphertext);
 }
 
-void ofb_decrypt(int size, char * ciphertext, char ** plaintext,
+void tea_ofb_decrypt(int size, char * ciphertext, char ** plaintext,
                  const unsigned long *const k){
     printf("\nOFB Decryption Mode:\n");
     int i=0;
@@ -136,7 +139,7 @@ void ofb_decrypt(int size, char * ciphertext, char ** plaintext,
     printf("plaintext:\n%s\n",*plaintext);
 }
 
-void ctr_encrypt(int size, char * plaintext, char ** ciphertext,
+void tea_ctr_encrypt(int size, char * plaintext, char ** ciphertext,
                  const unsigned long *const k){
     printf("\nCTR Encryption Mode:\n");
     int i=0;
@@ -164,7 +167,7 @@ void ctr_encrypt(int size, char * plaintext, char ** ciphertext,
     printf("ciphtertext:\n%s\n",*ciphertext);
 }
 
-void ctr_decrypt(int size, char * ciphertext, char ** plaintext,
+void tea_ctr_decrypt(int size, char * ciphertext, char ** plaintext,
                  const unsigned long *const k){
     printf("\nCTR Decryption Mode:\n");
     int i=0;
@@ -190,4 +193,78 @@ void ctr_decrypt(int size, char * ciphertext, char ** plaintext,
         (*plaintext)[i]=ciphertext[i];
     }
     printf("plaintext:\n%s\n",*plaintext);
+}
+
+void xxh_des_encrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer, DES_cblock *key){
+    DES_cblock ivsetup = {0xE1, 0xE2, 0xE3, 0xD4, 0xD5, 0xC6, 0xC7, 0xA8}; //iv
+    DES_key_schedule keysched;
+    DES_set_odd_parity(key);
+    if (DES_set_key_checked(key, &keysched))
+    {
+        fprintf(stderr, "ERROR: Unable to set key schedule\n");
+        exit(1);
+    }
+    printf("Plaintext:\n");
+    int i=0;
+    for(i=0;i<inputBufferSize;i++){
+        printf("%c", inputBuffer[i]);
+    }
+    printf("\n");
+    *outputBuffer=malloc(inputBufferSize);
+    DES_ncbc_encrypt(inputBuffer, *outputBuffer, inputBufferSize, &keysched, &ivsetup, DES_ENCRYPT);
+    
+    printf("Ciphertext:");
+    for(i=0;i<inputBufferSize;i++){
+        printf("%c", (*outputBuffer)[i]);
+    }
+    printf("\n");
+}
+
+void xxh_des_decrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer, DES_cblock *key){
+
+    DES_cblock ivsetup = {0xE1, 0xE2, 0xE3, 0xD4, 0xD5, 0xC6, 0xC7, 0xA8}; //iv
+    DES_key_schedule keysched;
+    DES_set_odd_parity(key);
+    if (DES_set_key_checked(key, &keysched))
+    {
+        fprintf(stderr, "ERROR: Unable to set key schedule\n");
+        exit(1);
+        
+    }
+    *outputBuffer=malloc(inputBufferSize);
+    int i=0;
+    printf("Ciphertext:");
+    for(i=0;i<inputBufferSize;i++){
+        printf("%c", inputBuffer[i]);
+    }
+    DES_ncbc_encrypt(inputBuffer, *outputBuffer, inputBufferSize, &keysched, &ivsetup, DES_DECRYPT);
+    
+    printf("\n\n\nDecrypted Text: \n");
+    for(i=0;i<inputBufferSize;i++){
+        printf("%c", (*outputBuffer)[i]);
+    }
+}
+
+void xxh_des_ofb_encrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer, DES_cblock *key){
+    DES_cblock ivecstr = {0xE1, 0xE2, 0xE3, 0xD4, 0xD5, 0xC6, 0xC7, 0xA8};
+    DES_cblock ivec;
+    DES_key_schedule ks;
+    int result;
+    if ((result = DES_set_key_checked(key, &ks)) != 0) {
+        if (result == -1) {
+            printf("ERROR: key parity is incorrect\n");
+        } else {
+            printf("ERROR: weak or semi-weak key\n");
+        }
+        exit(1);
+    }
+    *outputBuffer=malloc(inputBufferSize);
+    printf("Plaintext: [%s]\n", inputBuffer);
+    printf("Plaintext Length: %d\n", inputBufferSize);
+    DES_ofb_encrypt(inputBuffer, *outputBuffer, 8,inputBufferSize, &ks, &ivecstr);
+    int i=0;
+    printf("Ciphertext:");
+    for(i=0;i<inputBufferSize;i++){
+        printf("%c", (*outputBuffer)[i]);
+    }
 }

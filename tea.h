@@ -2,15 +2,18 @@ void encipher(unsigned long *const v,unsigned long *const w,
               const unsigned long *const k);
 void decipher(unsigned long *const v,unsigned long *const w,
               const unsigned long *const k);
-void cbc_encrypt(int size, char * plaintext, char ** ciphertext,
+void tea_cbc_encrypt(int size, char * plaintext, char ** ciphertext,
                  const unsigned long *const k);
-void cbc_decrypt(int size, char * ciphertext, char ** plaintext,
+void tea_cbc_decrypt(int size, char * ciphertext, char ** plaintext,
                  const unsigned long *const k);
-void ctr_encrypt(int size, char * plaintext, char ** ciphertext,
+void tea_ctr_encrypt(int size, char * plaintext, char ** ciphertext,
                  const unsigned long *const k);
-void ctr_decrypt(int size, char * ciphertext, char ** plaintext,
+void tea_ctr_decrypt(int size, char * ciphertext, char ** plaintext,
                  const unsigned long *const k);
-void ofb_encrypt(int size, char * plaintext, char ** ciphertext,
+void tea_ofb_encrypt(int size, char * plaintext, char ** ciphertext,
                  const unsigned long *const k);
-void ofb_decrypt(int size, char * ciphertext, char ** plaintext,
+void tea_ofb_decrypt(int size, char * ciphertext, char ** plaintext,
                  const unsigned long *const k);
+void xxh_des_decrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer, DES_cblock *seed);
+void xxh_des_encrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer, DES_cblock *seed);
+void xxh_ofb_encrypt(int inputBufferSize,char * inputBuffer,char **outputBuffer, DES_cblock *seed);
