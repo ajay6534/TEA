@@ -197,8 +197,8 @@ void processRequest(char * mode,char *blockCipher,char *blockCipherMode,char * k
         //tea cbc
         tea_cbc_encrypt(inputBufferSize,inputBuffer,&outputBuffer,teaKey);
         tea_cbc_decrypt(8*(inputBufferSize/8)+8,outputBuffer,&temp,teaKey);
-                printf("Before:\n%s\n",inputBuffer);
-                printf("After:\n%s\n",temp);
+//                printf("Before:\n%s\n",inputBuffer);
+//                printf("After:\n%s\n",temp);
         temp[inputBufferSize]='\0';
         printf("TEA CBC Correctness: %s\n",strcmp(inputBuffer,temp)==0?"True":"False");
         free(temp);
